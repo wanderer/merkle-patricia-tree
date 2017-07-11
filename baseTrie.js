@@ -73,7 +73,7 @@ Trie.prototype.get = function (key, cb) {
       value = node.value
     }
 
-    cb(err, value)
+    cb(err, value, stack)
   })
 }
 
