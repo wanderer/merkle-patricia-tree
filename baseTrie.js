@@ -99,7 +99,7 @@ Trie.prototype.put = function (key, value, cb) {
       if (self.root.toString('hex') !== ethUtil.SHA3_RLP.toString('hex')) {
         // first try to find the give key or its nearst node
         self.findPath(key, function (err, foundValue, keyRemainder, stack) {
-          if (err) {
+          if (err || !stack) {
             return cb(err)
           }
           // then update
@@ -148,16 +148,20 @@ Trie.prototype.getRaw = function (key, cb) {
   key = ethUtil.toBuffer(key)
 
   function dbGet (db, cb2) {
-    db.get(key, {
-      keyEncoding: 'binary',
-      valueEncoding: 'binary'
-    }, function (err, foundNode) {
-      if (err || !foundNode) {
-        cb2(null, null)
-      } else {
-        cb2(null, foundNode)
-      }
-    })
+    if (db && db.get) {
+      db.get(key, {
+        keyEncoding: 'binary',
+        valueEncoding: 'binary'
+      }, function (err, foundNode) {
+        if (err || !foundNode) {
+          cb2(null, null)
+        } else {
+          cb2(null, foundNode)
+        }
+      })
+    } else {
+      cb2(null, null)
+    }
   }
   asyncFirstSeries(this._getDBs, dbGet, cb)
 }
