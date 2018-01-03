@@ -94,9 +94,9 @@ function _enterCpMode () {
     db: memdown
   })
 
-  this._getDBs = prepend(this._scratch, this._getDBs)
+  this._getDBs = prepend(this._getDBs, this._scratch)
   this.__putDBs = this._putDBs
-  this._putDBs = prepend(this._scratch, this._getDBs)
+  this._putDBs = prepend(this._getDBs, this._scratch)
   this._putRaw = this.putRaw
   this.putRaw = putRaw
 }
