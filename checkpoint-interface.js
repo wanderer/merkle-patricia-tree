@@ -93,9 +93,10 @@ function _enterCpMode () {
   this._scratch = levelup('', {
     db: memdown
   })
-  this._getDBs = [this._scratch].concat(this._getDBs)
+
+  this._getDBs = prepend(this._scratch, this._getDBs)
   this.__putDBs = this._putDBs
-  this._putDBs = [this._scratch].concat(this._getDBs)
+  this._putDBs = prepend(this._scratch, this._getDBs)
   this._putRaw = this.putRaw
   this.putRaw = putRaw
 }
