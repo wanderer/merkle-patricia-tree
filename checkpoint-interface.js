@@ -36,11 +36,15 @@ function checkpointInterface (trie) {
  */
 function checkpoint () {
   var self = this
-  var wasCheckpoint = self.isCheckpoint
-  self._checkpoints.push(self.root)
-  if (!wasCheckpoint && self.isCheckpoint) {
-    self._enterCpMode()
-  }
+  self.sem.take(function () {
+    var wasCheckpoint = self.isCheckpoint
+    self._checkpoints.push(self.root)
+    if (!wasCheckpoint && self.isCheckpoint) {
+      self._enterCpMode()
+    }
+    self.sem.leave()
+  })
+
 }
 
 /**
@@ -171,15 +175,19 @@ ScratchReadStream.prototype._read = function () {
   var self = this
   if (!self._started) {
     self._started = true
-    self.trie._findDbNodes(function (nodeRef, node, key, next) {
-      self.push({
-        key: nodeRef,
-        value: node.serialize()
+    self.trie.sem.take(function () {
+      self.trie._findDbNodes(function (nodeRef, node, key, next) {
+        self.push({
+          key: nodeRef,
+          value: node.serialize()
+        })
+        next()
+      }, function () {
+        // close stream
+        self.push(null)
+        self.trie.sem.leave()
       })
-      next()
-    }, function () {
-      // close stream
-      self.push(null)
     })
+
   }
 }
