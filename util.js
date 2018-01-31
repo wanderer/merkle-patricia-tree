@@ -58,21 +58,24 @@ function callTogether () {
 /**
  * Take a collection of async fns, call the cb on the first to return a truthy value.
  * If all run without a truthy result, return undefined
+ *
+ * TODO replace with async race / tryEach
+ * intended behavior depends on swallowing any  error
  */
-function asyncFirstSeries (array, iterator, cb) {
+function asyncFirstSeries (array, processItem, cb) {
   var didComplete = false
   async.eachSeries(array, function (item, next) {
     if (didComplete) return next
-    iterator(item, function (err, result) {
-      if (result) {
+    processItem(item, function (err, returnVal) {
+      if (returnVal) {
         didComplete = true
-        process.nextTick(cb.bind(null, null, result))
+        process.nextTick(cb.bind(null, null, returnVal))
       }
       next(err)
     })
-  }, function () {
+  }, function (err) {
     if (!didComplete) {
-      cb()
+      cb({'err': 'no result'})
     }
   })
 }
