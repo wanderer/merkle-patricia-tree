@@ -168,13 +168,15 @@ Trie.prototype._getRaw = function (key, cb) {
       valueEncoding: 'binary'
     }, function (err, foundNode) {
       if (err || !foundNode) {
+        // not passing err as it makes the wrapping async iteration to fail and
+        // interferes with asyncFirstSeries logic, causing an early return
         cb2(null, null)
       } else {
         cb2(null, foundNode)
       }
     })
   }
-  // TODO (clehene) replace with async.race / async.tryEach
+  // TODO replace with async.race / async.tryEach
   asyncFirstSeries(this._getDBs, dbGet, cb)
 }
 
@@ -185,14 +187,13 @@ Trie.prototype._lookupNode = function (node, cb) {
   } else {
     this.getRaw(node, function (err, value) {
       if (err) {
-        throw err
-      }
-
-      if (value) {
+        cb(err)
+      } else if (value) {
         value = new TrieNode(rlp.decode(value))
+        cb(null, value)
+      } else {
+        cb()
       }
-
-      cb(value)
     }, true)
   }
 }
@@ -471,8 +472,8 @@ Trie.prototype._walkTrie = function (root, onNode, onDone) {
     return onDone()
   }
 
-  self._lookupNode(root, function (node) {
-    processNode(root, node, null, function (err) {
+  self._lookupNode(root, function (err, node) {
+    walkNode(err, root, node, null, function (err) {
       if (err) {
         return onDone(err)
       }
@@ -480,8 +481,10 @@ Trie.prototype._walkTrie = function (root, onNode, onDone) {
     })
   })
 
-  function processNode (nodeRef, node, key, cb) {
-    if (!node) return cb()
+  function walkNode (err, nodeRef, node, key, cb) {
+    if (!node) {
+      return cb(err)
+    }
     if (aborted) return cb()
     var stopped = false
     key = key || []
@@ -509,17 +512,17 @@ Trie.prototype._walkTrie = function (root, onNode, onDone) {
           var keyExtension = childData[0]
           var childRef = childData[1]
           var childKey = key.concat(keyExtension)
-          self._lookupNode(childRef, function (childNode) {
-            processNode(childRef, childNode, childKey, cb)
+          self._lookupNode(childRef, function (err, childNode) {
+                walkNode(null, childRef, childNode, childKey, cb)
           })
         }, cb)
       },
       only: function (childIndex) {
         var childRef = node.getValue(childIndex)
-        self._lookupNode(childRef, function (childNode) {
+        self._lookupNode(childRef, function (err, childNode) {
           var childKey = key.slice()
           childKey.push(childIndex)
-          processNode(childRef, childNode, childKey, cb)
+          walkNode(null, childRef, childNode, childKey, cb)
         })
       }
     }
@@ -661,7 +664,7 @@ Trie.prototype._deleteNode = function (key, stack, cb) {
       var branchNodeKey = branchNodes[0][0]
 
       // look up node
-      this._lookupNode(branchNode, function (foundNode) {
+      this._lookupNode(branchNode, function (err, foundNode) {
         key = processBranchNode(key, branchNodeKey, foundNode, parentNode, stack, opStack)
         self._saveStack(key, stack, opStack, cb)
       })
@@ -767,7 +770,7 @@ Trie.prototype.checkRoot = function (root, cb) {
   root = ethUtil.toBuffer(root)
   cb = callTogether(cb, self.sem.leave)
   self.sem.take(function () {
-    this._lookupNode(root, function (value) {
+    this._lookupNode(root, function (err, value) {
       cb(null, !!value)
     })
   })
