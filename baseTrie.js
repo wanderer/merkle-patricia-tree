@@ -114,6 +114,41 @@ Trie.prototype.put = function (key, value, cb) {
 }
 
 /**
+ * Stores a given `value` at the given `key` without sha3 hashing the key
+ * @method putWithoutHashing
+ * @param {Buffer|String} key
+ * @param {Buffer|String} Value
+ * @param {Function} cb A callback `Function` which is given the argument `err` - for errors that may have occured
+ */
+Trie.prototype.putWithoutHashing = function (key, value, cb) {
+  var self = this
+
+  key = ethUtil.toBuffer(key)
+  value = ethUtil.toBuffer(value)
+
+  if (!value || value.toString() === '') {
+    self.del(key, cb)
+  } else {
+    cb = callTogether(cb, self.sem.leave)
+
+    self.sem.take(function () {
+      if (self.root.toString('hex') !== ethUtil.SHA3_RLP.toString('hex')) {
+        // first try to find the give key or its nearst node
+        self.findPath(key, function (err, foundValue, keyRemainder, stack) {
+          if (err) {
+            return cb(err)
+          }
+          // then update
+          self._updateNode(key, value, keyRemainder, stack, cb)
+        })
+      } else {
+        self._createInitialNode(key, value, cb) // if no root initialize this trie
+      }
+    })
+  }
+}
+
+/**
  * deletes a value given a `key`
  * @method del
  * @param {Buffer|String} key
