@@ -2,17 +2,24 @@
   "name": "merkle-patricia-tree",
   "version": "2.3.1",
   "description": "This is an implementation of the modified merkle patricia tree as speficed in the Ethereum's yellow paper.",
-  "main": "index.js",
+  "main": "build/index.js",
   "scripts": {
-    "test": "npm run test:node && npm run test:browser",
+    "test": "mocha -r ts-node/register src/**/*.spec.ts --timeout 40000",
     "coverage": "istanbul cover ./test/index.js",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "standard",
     "prepublish": "npm run build",
     "test:browser": "karma start karma.conf.js",
     "test:node": "tape ./test/*.js",
-    "build": "browserify --s Trie index.js > ./dist/trie.js",
-    "build:docs": "documentation --github  -f md ./index.js ./secure.js ./proof.js > ./docs/index-template.md"
+    "build": "browserify --s Trie src/index_original.js > ./dist/trie.js",
+    "build:docs": "documentation --github  -f md src/index_original.js src/secure.js src/proof.js > ./docs/index-template.md",
+    "check": "gts check",
+    "clean": "gts clean",
+    "compile": "tsc -p .",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
   },
   "author": {
     "name": "mjbecze",
@@ -43,10 +50,15 @@
     "semaphore": ">=1.0.1"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.4",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.7.1",
     "browserify": "^13.0.0",
+    "chai": "^4.1.2",
     "coveralls": "^2.11.6",
     "documentation": "^3.0.4",
     "ethereumjs-testing": "0.0.1",
+    "gts": "^0.5.4",
     "istanbul": "^0.4.1",
     "karma": "^1.7.1",
     "karma-browserify": "^5.0.0",
@@ -55,8 +67,12 @@
     "karma-env-preprocessor": "^0.1.1",
     "karma-firefox-launcher": "^1.0.1",
     "karma-tap": "^1.0.3",
+    "mocha": "^5.2.0",
+    "pre-commit": "^1.2.2",
     "standard": "^5.3.1",
-    "tape": "^4.4.0"
+    "tape": "^4.4.0",
+    "ts-node": "^7.0.1",
+    "typescript": "~2.6.1"
   },
   "standard": {
     "ignore": [

@@ -1,4 +1,4 @@
-const Trie = require('../index.js')
+const Trie = require('../src/index_original.js')
 const tape = require('tape')
 const crypto = require('crypto')
 

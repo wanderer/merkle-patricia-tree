@@ -1,4 +1,4 @@
-const Trie = require('../index.js')
+const Trie = require('../src/index_original.js')
 const async = require('async')
 const rlp = require('rlp')
 const tape = require('tape')

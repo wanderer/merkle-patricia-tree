@@ -1,4 +1,4 @@
-const CheckpointTrie = require('./index')
+const CheckpointTrie = require('./index_original')
 const secureInterface = require('./secure-interface')
 const inherits = require('util').inherits
 
