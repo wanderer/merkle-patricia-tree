@@ -30,14 +30,14 @@ tape('offical tests', function (t) {
 
 tape('offical tests any order', function (t) {
   const jsonTests = require('./fixture/trieanyorder.json').tests
-  var testNames = Object.keys(jsonTests)
-  var trie = new Trie()
+  let testNames = Object.keys(jsonTests)
+  let trie = new Trie()
   async.eachSeries(testNames, function (i, done) {
-    var test = jsonTests[i]
-    var keys = Object.keys(test.in)
+    let test = jsonTests[i]
+    let keys = Object.keys(test.in)
 
     async.eachSeries(keys, function (key, done) {
-      var val = test.in[key]
+      let val = test.in[key]
 
       if (key.slice(0, 2) === '0x') {
         key = new Buffer(key.slice(2), 'hex')
