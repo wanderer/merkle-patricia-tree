@@ -1,5 +1,6 @@
 const rlp = require('rlp')
 const ethUtil = require('ethereumjs-util')
+const { stringToNibbles, isTerminator, addHexPrefix, nibblesToBuffer, removeHexPrefix } = require('./hex-prefix')
 
 module.exports = class TrieNode {
   constructor (type, key, value) {
@@ -25,82 +26,6 @@ module.exports = class TrieNode {
   }
 
   /**
-   * @param {Array} dataArr
-   * @returns {Buffer} - returns buffer of encoded data
-   * hexPrefix
-   **/
-  static addHexPrefix (key, terminator) {
-    // odd
-    if (key.length % 2) {
-      key.unshift(1)
-    } else {
-      // even
-      key.unshift(0)
-      key.unshift(0)
-    }
-
-    if (terminator) {
-      key[0] += 2
-    }
-
-    return key
-  }
-
-  static removeHexPrefix (val) {
-    if (val[0] % 2) {
-      val = val.slice(1)
-    } else {
-      val = val.slice(2)
-    }
-
-    return val
-  }
-
-  /**
-   * Determines if a key has Arnold Schwarzenegger in it.
-   * @method isTerminator
-   * @private
-   * @param {Array} key - an hexprefixed array of nibbles
-   */
-  static isTerminator (key) {
-    return key[0] > 1
-  }
-
-  /**
-   * Converts a string OR a buffer to a nibble array.
-   * @method stringToNibbles
-   * @private
-   * @param {Buffer| String} key
-   */
-  static stringToNibbles (key) {
-    var bkey = new Buffer(key)
-    var nibbles = []
-
-    for (var i = 0; i < bkey.length; i++) {
-      var q = i * 2
-      nibbles[q] = bkey[i] >> 4
-      ++q
-      nibbles[q] = bkey[i] % 16
-    }
-    return nibbles
-  }
-
-  /**
-   * Converts a nibble array into a buffer.
-   * @method nibblesToBuffer
-   * @private
-   * @param arr
-   */
-  static nibblesToBuffer (arr) {
-    var buf = new Buffer(arr.length / 2)
-    for (var i = 0; i < buf.length; i++) {
-      var q = i * 2
-      buf[i] = (arr[q] << 4) + arr[++q]
-    }
-    return buf
-  }
-
-  /**
    * Determines the node type.
    * @private
    * @returns {String} - the node type
@@ -113,8 +38,8 @@ module.exports = class TrieNode {
     if (node.length === 17) {
       return 'branch'
     } else if (node.length === 2) {
-      var key = this.stringToNibbles(node[0])
-      if (this.isTerminator(key)) {
+      var key = stringToNibbles(node[0])
+      if (isTerminator(key)) {
         return 'leaf'
       }
 
@@ -177,20 +102,20 @@ module.exports = class TrieNode {
   setKey (key) {
     if (this.type !== 'branch') {
       if (Buffer.isBuffer(key)) {
-        key = TrieNode.stringToNibbles(key)
+        key = stringToNibbles(key)
       } else {
         key = key.slice(0) // copy the key
       }
 
-      key = TrieNode.addHexPrefix(key, this.type === 'leaf')
-      this.raw[0] = TrieNode.nibblesToBuffer(key)
+      key = addHexPrefix(key, this.type === 'leaf')
+      this.raw[0] = nibblesToBuffer(key)
     }
   }
 
   getKey () {
     if (this.type !== 'branch') {
       var key = this.raw[0]
-      key = TrieNode.removeHexPrefix(TrieNode.stringToNibbles(key))
+      key = removeHexPrefix(stringToNibbles(key))
       return (key)
     }
   }
