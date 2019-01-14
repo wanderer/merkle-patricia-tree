@@ -74,3 +74,26 @@ export function nibblesToBuffer (arr) {
   }
   return buf
 }
+
+/**
+ * Returns the number of in order matching nibbles of two give nibble arrays
+ * @method matchingNibbleLength
+ * @private
+ * @param {Array} nib1
+ * @param {Array} nib2
+ */
+export function matchingNibbleLength (nib1, nib2) {
+  var i = 0
+  while (nib1[i] === nib2[i] && nib1.length > i) {
+    i++
+  }
+  return i
+}
+
+/**
+ * Compare two 'nibble array' keys
+ */
+export function doKeysMatch (keyA, keyB) {
+  var length = matchingNibbleLength(keyA, keyB)
+  return length === keyA.length && length === keyB.length
+}

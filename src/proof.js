@@ -1,7 +1,6 @@
 const TrieNode = require('./trieNode')
 const ethUtil = require('ethereumjs-util')
-const matchingNibbleLength = require('./util').matchingNibbleLength
-const { stringToNibbles } = require('./hex-prefix')
+const { stringToNibbles, matchingNibbleLength } = require('./hex-prefix')
 
 /**
  * Returns a merkle proof for a given key
