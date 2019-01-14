@@ -10,7 +10,7 @@ You can create a secure Trie where the keys are automatically hashed using **SHA
 
 ## Trie
 
-[src/baseTrie.js:26-782][2]
+[src/baseTrie.js:23-779][2]
 
 Use `require('merkel-patricia-tree')` for the base interface. In Ethereum applications stick with the Secure Trie Overlay `require('merkel-patricia-tree/secure')`. The API for the raw and the secure interface are about the same
 
@@ -27,7 +27,7 @@ Use `require('merkel-patricia-tree')` for the base interface. In Ethereum applic
 
 ### get
 
-[src/baseTrie.js:66-78][9]
+[src/baseTrie.js:63-75][9]
 
 Gets a value given a `key`
 
@@ -38,7 +38,7 @@ Gets a value given a `key`
 
 ### put
 
-[src/baseTrie.js:88-112][11]
+[src/baseTrie.js:85-109][11]
 
 Stores a given `value` at the given `key`
 
@@ -50,7 +50,7 @@ Stores a given `value` at the given `key`
 
 ### del
 
-[src/baseTrie.js:121-137][12]
+[src/baseTrie.js:118-134][12]
 
 deletes a value given a `key`
 
@@ -61,7 +61,7 @@ deletes a value given a `key`
 
 ### getRaw
 
-[src/baseTrie.js:146-163][13]
+[src/baseTrie.js:143-160][13]
 
 Retrieves a raw value in the underlying db
 
@@ -72,7 +72,7 @@ Retrieves a raw value in the underlying db
 
 ### putRaw
 
-[src/baseTrie.js:193-202][14]
+[src/baseTrie.js:190-199][14]
 
 Writes a value directly to the underlining db
 
@@ -84,7 +84,7 @@ Writes a value directly to the underlining db
 
 ### delRaw
 
-[src/baseTrie.js:211-219][15]
+[src/baseTrie.js:208-216][15]
 
 Removes a raw value in the underlying db
 
@@ -95,7 +95,7 @@ Removes a raw value in the underlying db
 
 ### findPath
 
-[src/baseTrie.js:253-299][16]
+[src/baseTrie.js:250-296][16]
 
 Tries to find a path to the node for the given key
 It returns a `stack` of nodes to the closet node
@@ -111,7 +111,7 @@ It returns a `stack` of nodes to the closet node
 
 ### createReadStream
 
-[src/baseTrie.js:731-733][17]
+[src/baseTrie.js:728-730][17]
 
 The `data` event is given an `Object` hat has two properties; the `key` and the `value`. Both should be Buffers.
 
@@ -119,7 +119,7 @@ Returns **[stream.Readable][18]** Returns a [stream][19] of the contents of the 
 
 ### batch
 
-[src/baseTrie.js:757-767][20]
+[src/baseTrie.js:754-764][20]
 
 The given hash of operations (key additions or deletions) are executed on the DB
 
@@ -143,7 +143,7 @@ trie.batch(ops)
 
 ### checkRoot
 
-[src/baseTrie.js:776-781][22]
+[src/baseTrie.js:773-778][22]
 
 Checks if a given root exists
 
@@ -159,7 +159,7 @@ Static functions for creating/verifying a merkle proof.
 
 ### prove
 
-[src/proof.js:13-30][23]
+[src/proof.js:12-29][23]
 
 Returns a merkle proof for a given key
 
@@ -171,7 +171,7 @@ Returns a merkle proof for a given key
 
 ### verifyProof
 
-[src/proof.js:40-101][25]
+[src/proof.js:39-100][25]
 
 Verifies a merkle proof for a given key
 
@@ -203,7 +203,7 @@ hexPrefix
 
 ### asyncFirstSeries
 
-[src/util.js:63-79][27]
+[src/util.js:38-54][27]
 
 Take a collection of async fns, call the cb on the first to return a truthy value.
 If all run without a truthy result, return undefined
@@ -214,16 +214,9 @@ If all run without a truthy result, return undefined
 -   `iterator`  
 -   `cb`  
 
-### callTogether
-
-[src/util.js:37-57][28]
-
-Take two or more functions and returns a function  that will execute all of
-the given functions
-
 ### doKeysMatch
 
-[src/util.js:28-31][29]
+[src/hex-prefix.js:96-99][28]
 
 Compare two 'nibble array' keys
 
@@ -232,9 +225,16 @@ Compare two 'nibble array' keys
 -   `keyA`  
 -   `keyB`  
 
-[1]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/secure.js#L10-L15 "Source code on GitHub"
+## 
 
-[2]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/baseTrie.js#L26-L782 "Source code on GitHub"
+[src/util.js:3-6][29]
+
+Take two or more functions and returns a function  that will execute all of
+the given functions
+
+[1]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/secure.js#L10-L15 "Source code on GitHub"
+
+[2]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/baseTrie.js#L23-L779 "Source code on GitHub"
 
 [3]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
 
@@ -248,44 +248,44 @@ Compare two 'nibble array' keys
 
 [8]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
 
-[9]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/baseTrie.js#L66-L78 "Source code on GitHub"
+[9]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/baseTrie.js#L63-L75 "Source code on GitHub"
 
 [10]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
 
-[11]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/baseTrie.js#L88-L112 "Source code on GitHub"
+[11]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/baseTrie.js#L85-L109 "Source code on GitHub"
 
-[12]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/baseTrie.js#L121-L137 "Source code on GitHub"
+[12]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/baseTrie.js#L118-L134 "Source code on GitHub"
 
-[13]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/baseTrie.js#L146-L163 "Source code on GitHub"
+[13]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/baseTrie.js#L143-L160 "Source code on GitHub"
 
-[14]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/baseTrie.js#L193-L202 "Source code on GitHub"
+[14]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/baseTrie.js#L190-L199 "Source code on GitHub"
 
-[15]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/baseTrie.js#L211-L219 "Source code on GitHub"
+[15]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/baseTrie.js#L208-L216 "Source code on GitHub"
 
-[16]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/baseTrie.js#L253-L299 "Source code on GitHub"
+[16]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/baseTrie.js#L250-L296 "Source code on GitHub"
 
-[17]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/baseTrie.js#L731-L733 "Source code on GitHub"
+[17]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/baseTrie.js#L728-L730 "Source code on GitHub"
 
 [18]: https://nodejs.org/api/stream.html#stream_class_stream_readable
 
 [19]: https://nodejs.org/dist/latest-v5.x/docs/api/stream.html#stream_class_stream_readable
 
-[20]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/baseTrie.js#L757-L767 "Source code on GitHub"
+[20]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/baseTrie.js#L754-L764 "Source code on GitHub"
 
 [21]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
 
-[22]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/baseTrie.js#L776-L781 "Source code on GitHub"
+[22]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/baseTrie.js#L773-L778 "Source code on GitHub"
 
-[23]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/proof.js#L13-L30 "Source code on GitHub"
+[23]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/proof.js#L12-L29 "Source code on GitHub"
 
 [24]: #trie
 
-[25]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/proof.js#L40-L101 "Source code on GitHub"
+[25]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/proof.js#L39-L100 "Source code on GitHub"
 
-[26]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/hex-prefix.js#L6-L21 "Source code on GitHub"
+[26]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/hex-prefix.js#L6-L21 "Source code on GitHub"
 
-[27]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/util.js#L63-L79 "Source code on GitHub"
+[27]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/util.js#L38-L54 "Source code on GitHub"
 
-[28]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/util.js#L37-L57 "Source code on GitHub"
+[28]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/hex-prefix.js#L96-L99 "Source code on GitHub"
 
-[29]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/bf4dae3127783468a67ad60984c7e63ae9c882c0/src/util.js#L28-L31 "Source code on GitHub"
+[29]: https://git@github.com/:ethereumjs/merkle-patricia-tree/blob/7e11c33a23b69bc051bbdcde2bf2f2622e6701ca/src/util.js#L3-L6 "Source code on GitHub"
