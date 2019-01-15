@@ -1,13 +1,13 @@
 const assert = require('assert')
-const level = require('level-mem')
 const async = require('async')
 const rlp = require('rlp')
 const ethUtil = require('ethereumjs-util')
 const semaphore = require('semaphore')
+const DB = require('./db')
 const TrieNode = require('./trieNode')
 const ReadStream = require('./readStream')
 const PrioritizedTaskExecutor = require('./prioritizedTaskExecutor')
-const { callTogether, asyncFirstSeries } = require('./util/async')
+const { callTogether } = require('./util/async')
 const { stringToNibbles, matchingNibbleLength, doKeysMatch } = require('./util/nibbles')
 
 /**
@@ -27,10 +27,9 @@ module.exports = class Trie {
     this.sem = semaphore(1)
 
     // setup dbs
-    this.db = db || level()
-
-    this._getDBs = [this.db]
-    this._putDBs = [this.db]
+    this.db = new DB(db)
+    this._getDBs = this.db._getDBs
+    this._putDBs = this.db._putDBs
 
     Object.defineProperty(this, 'root', {
       set(value) {
@@ -50,7 +49,10 @@ module.exports = class Trie {
 
     this.root = root
 
-    this.putRaw = this._putRaw
+    this._putRaw = this.db.put
+    this.putRaw = this.db.put
+    this.getRaw = this.db.get
+    this.delRaw = this.db.del
   }
 
   /**
@@ -133,32 +135,6 @@ module.exports = class Trie {
     })
   }
 
-  /**
-   * Retrieves a raw value in the underlying db
-   * @method getRaw
-   * @memberof Trie
-   * @param {Buffer} key
-   * @param {Function} callback A callback `Function`, which is given the arguments `err` - for errors that may have occured and `value` - the found value in a `Buffer` or if no value was found `null`.
-   */
-  getRaw (key, cb) {
-    key = ethUtil.toBuffer(key)
-
-    function dbGet (db, cb2) {
-      db.get(key, {
-        keyEncoding: 'binary',
-        valueEncoding: 'binary'
-      }, (err, foundNode) => {
-        if (err || !foundNode) {
-          cb2(null, null)
-        } else {
-          cb2(null, foundNode)
-        }
-      })
-    }
-
-    asyncFirstSeries(this._getDBs, dbGet, cb)
-  }
-
   // retrieves a node from dbs by hash
   _lookupNode (node, cb) {
     if (TrieNode.isRawNode(node)) {
@@ -178,60 +154,11 @@ module.exports = class Trie {
     }
   }
 
-  /**
-   * Writes a value directly to the underlining db
-   * @method putRaw
-   * @memberof Trie
-   * @param {Buffer|String} key The key as a `Buffer` or `String`
-   * @param {Buffer} value The value to be stored
-   * @param {Function} callback A callback `Function`, which is given the argument `err` - for errors that may have occured
-   */
-  // TODO: remove the proxy method when changing the caching
-  _putRaw (key, val, cb) {
-    function dbPut (db, cb2) {
-      db.put(key, val, {
-        keyEncoding: 'binary',
-        valueEncoding: 'binary'
-      }, cb2)
-    }
-
-    async.each(this._putDBs, dbPut, cb)
-  }
-
-  /**
-   * Removes a raw value in the underlying db
-   * @method delRaw
-   * @memberof Trie
-   * @param {Buffer|String} key
-   * @param {Function} callback A callback `Function`, which is given the argument `err` - for errors that may have occured
-   */
-  delRaw (key, cb) {
-    function del (db, cb2) {
-      db.del(key, {
-        keyEncoding: 'binary'
-      }, cb2)
-    }
-
-    async.each(this._putDBs, del, cb)
-  }
-
   // writes a single node to dbs
   _putNode (node, cb) {
     const hash = node.hash()
     const serialized = node.serialize()
-    this._putRaw(hash, serialized, cb)
-  }
-
-  // writes many nodes to db
-  _batchNodes (opStack, cb) {
-    function dbBatch (db, cb) {
-      db.batch(opStack, {
-        keyEncoding: 'binary',
-        valueEncoding: 'binary'
-      }, cb)
-    }
-
-    async.each(this._putDBs, dbBatch, cb)
+    this.db.put(hash, serialized, cb)
   }
 
   /**
@@ -560,7 +487,7 @@ module.exports = class Trie {
       this.root = lastRoot
     }
 
-    this._batchNodes(opStack, cb)
+    this.db.batch(opStack, cb)
   }
 
   _deleteNode (key, stack, cb) {
