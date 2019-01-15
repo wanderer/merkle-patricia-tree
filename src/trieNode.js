@@ -1,6 +1,7 @@
 const rlp = require('rlp')
 const ethUtil = require('ethereumjs-util')
-const { stringToNibbles, isTerminator, addHexPrefix, nibblesToBuffer, removeHexPrefix } = require('./hex-prefix')
+const { stringToNibbles, nibblesToBuffer } = require('./util/nibbles')
+const { isTerminator, addHexPrefix, removeHexPrefix } = require('./util/hex')
 
 module.exports = class TrieNode {
   constructor (type, key, value) {

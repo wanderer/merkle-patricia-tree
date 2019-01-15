@@ -1,5 +1,5 @@
 const Readable = require('readable-stream').Readable
-const { nibblesToBuffer } = require('./hex-prefix')
+const { nibblesToBuffer } = require('./util/nibbles')
 
 module.exports = class TrieReadStream extends Readable {
   constructor (trie) {

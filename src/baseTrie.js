@@ -7,8 +7,8 @@ const semaphore = require('semaphore')
 const TrieNode = require('./trieNode')
 const ReadStream = require('./readStream')
 const PrioritizedTaskExecutor = require('./prioritizedTaskExecutor')
-const { callTogether, asyncFirstSeries } = require('./util')
-const { stringToNibbles, matchingNibbleLength, doKeysMatch } = require('./hex-prefix')
+const { callTogether, asyncFirstSeries } = require('./util/async')
+const { stringToNibbles, matchingNibbleLength, doKeysMatch } = require('./util/nibbles')
 
 /**
  * Use `require('merkel-patricia-tree')` for the base interface. In Ethereum applications stick with the Secure Trie Overlay `require('merkel-patricia-tree/secure')`. The API for the raw and the secure interface are about the same
