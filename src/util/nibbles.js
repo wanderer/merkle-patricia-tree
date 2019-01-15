@@ -1,8 +1,8 @@
 /**
  * Converts a string OR a buffer to a nibble array.
  * @method stringToNibbles
- * @private
  * @param {Buffer| String} key
+ * @private
  */
 export function stringToNibbles (key) {
   const bkey = new Buffer(key)
@@ -21,8 +21,8 @@ export function stringToNibbles (key) {
 /**
  * Converts a nibble array into a buffer.
  * @method nibblesToBuffer
+ * @param {Array} Nibble array
  * @private
- * @param arr
  */
 export function nibblesToBuffer (arr) {
   let buf = new Buffer(arr.length / 2)
@@ -34,14 +34,14 @@ export function nibblesToBuffer (arr) {
 }
 
 /**
- * Returns the number of in order matching nibbles of two give nibble arrays
+ * Returns the number of in order matching nibbles of two give nibble arrays.
  * @method matchingNibbleLength
- * @private
  * @param {Array} nib1
  * @param {Array} nib2
+ * @private
  */
 export function matchingNibbleLength (nib1, nib2) {
-  var i = 0
+  let i = 0
   while (nib1[i] === nib2[i] && nib1.length > i) {
     i++
   }
@@ -49,9 +49,11 @@ export function matchingNibbleLength (nib1, nib2) {
 }
 
 /**
- * Compare two 'nibble array' keys
+ * Compare two nibble array keys.
+ * @param {Array} keyA
+ * @param {Array} keyB
  */
 export function doKeysMatch (keyA, keyB) {
-  var length = matchingNibbleLength(keyA, keyB)
+  const length = matchingNibbleLength(keyA, keyB)
   return length === keyA.length && length === keyB.length
 }

@@ -1,7 +1,8 @@
 /**
- * @param {Array} dataArr
- * @returns {Buffer} - returns buffer of encoded data
- * hexPrefix
+ * Prepends hex prefix to an array of nibbles.
+ * @method addHexPrefix
+ * @param {Array} Array of nibbles
+ * @returns {Array} - returns buffer of encoded data
  **/
 export function addHexPrefix (key, terminator) {
   // odd
@@ -20,6 +21,12 @@ export function addHexPrefix (key, terminator) {
   return key
 }
 
+/**
+ * Removes hex prefix of an array of nibbles.
+ * @method removeHexPrefix
+ * @param {Array} Array of nibbles
+ * @private
+ */
 export function removeHexPrefix (val) {
   if (val[0] % 2) {
     val = val.slice(1)
@@ -31,10 +38,10 @@ export function removeHexPrefix (val) {
 }
 
 /**
- * Determines if a key has Arnold Schwarzenegger in it.
+ * Returns true if hexprefixed path is for a terminating (leaf) node.
  * @method isTerminator
- * @private
  * @param {Array} key - an hexprefixed array of nibbles
+ * @private
  */
 export function isTerminator (key) {
   return key[0] > 1
