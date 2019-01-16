@@ -1,7 +1,5 @@
-const async = require('async')
 const level = require('level-mem')
 const ethUtil = require('ethereumjs-util')
-const { asyncFirstSeries } = require('./util/async')
 
 const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
 

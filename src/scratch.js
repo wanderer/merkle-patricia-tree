@@ -1,5 +1,3 @@
-const async = require('async')
-const level = require('level-mem')
 const DB = require('./db')
 const { asyncFirstSeries } = require('./util/async')
 

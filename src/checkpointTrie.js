@@ -1,5 +1,4 @@
 const async = require('async')
-const level = require('level-mem')
 const WriteStream = require('level-ws')
 const BaseTrie = require('./baseTrie')
 const proof = require('./proof.js')
