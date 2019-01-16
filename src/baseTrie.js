@@ -11,10 +11,13 @@ const { callTogether } = require('./util/async')
 const { stringToNibbles, matchingNibbleLength, doKeysMatch } = require('./util/nibbles')
 
 /**
- * Use `require('merkel-patricia-tree')` for the base interface. In Ethereum applications stick with the Secure Trie Overlay `require('merkel-patricia-tree/secure')`. The API for the raw and the secure interface are about the same
+ * Use `require('merkel-patricia-tree')` for the base interface. In Ethereum applications
+ * stick with the Secure Trie Overlay `require('merkel-patricia-tree/secure')`.
+ * The API for the raw and the secure interface are about the same
  * @class Trie
  * @public
- * @param {Object} [db] An instance of [levelup](https://github.com/rvagg/node-levelup/) or a compatible API. If the db is `null` or left undefined, then the trie will be stored in memory via [memdown](https://github.com/rvagg/memdown)
+ * @param {Object} [db] An instance of [levelup](https://github.com/rvagg/node-levelup/), a compatible API or an instance of `DB`.
+ * If the db is `null` or left undefined, then the trie will be stored in memory via [memdown](https://github.com/rvagg/memdown)
  * @param {Buffer|String} [root] A hex `String` or `Buffer` for the root of a previously stored trie
  * @prop {Buffer} root The current root of the `trie`
  * @prop {Boolean} isCheckpoint  determines if you are saving to a checkpoint or directly to the db
@@ -26,10 +29,11 @@ module.exports = class Trie {
     this.EMPTY_TRIE_ROOT = ethUtil.SHA3_RLP
     this.sem = semaphore(1)
 
-    // setup dbs
-    this.db = new DB(db)
-    this._getDBs = this.db._getDBs
-    this._putDBs = this.db._putDBs
+    if (db instanceof DB) {
+      this.db = db
+    } else {
+      this.db = new DB(db)
+    }
 
     Object.defineProperty(this, 'root', {
       set(value) {
@@ -49,10 +53,8 @@ module.exports = class Trie {
 
     this.root = root
 
-    this._putRaw = this.db.put
-    this.putRaw = this.db.put
-    this.getRaw = this.db.get
-    this.delRaw = this.db.del
+    this.getRaw = this.db.get.bind(this.db)
+    this.delRaw = this.db.del.bind(this.db)
   }
 
   /**
@@ -140,7 +142,7 @@ module.exports = class Trie {
     if (TrieNode.isRawNode(node)) {
       cb(new TrieNode(node))
     } else {
-      this.getRaw(node, (err, value) => {
+      this.db.get(node, (err, value) => {
         if (err) {
           throw err
         }
@@ -659,7 +661,8 @@ module.exports = class Trie {
   // creates a new trie backed by the same db
   // and starting at the same root
   copy () {
-    return new Trie(this.db, this.root)
+    const db = this.db.copy()
+    return new Trie(db, this.root)
   }
 
   /**

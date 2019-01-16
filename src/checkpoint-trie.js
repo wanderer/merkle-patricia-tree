@@ -4,12 +4,18 @@ const WriteStream = require('level-ws')
 const BaseTrie = require('./baseTrie')
 const proof = require('./proof.js')
 const ScratchReadStream = require('./scratchReadStream')
+const DB = require('./db')
+const ScratchDB = require('./scratch')
 const { callTogether } = require('./util/async')
 
 module.exports = class CheckpointTrie extends BaseTrie {
   constructor (...args) {
     super(...args)
+    // Reference to main DB instance
+    this._mainDB = this.db
+    // DB instance used for checkpoints
     this._scratch = null
+    // Roots of trie at the moment of checkpoint
     this._checkpoints = []
   }
 
@@ -97,9 +103,10 @@ module.exports = class CheckpointTrie extends BaseTrie {
    * @method copy
    */
   copy () {
-    const trie = new CheckpointTrie(this.db, this.root)
+    const db = this._mainDB.copy()
+    const trie = new CheckpointTrie(db, this.root)
     trie._scratch = this._scratch
-    // trie._checkpoints = this._checkpoints.slice()
+    trie._checkpoints = this._checkpoints.slice()
     return trie
   }
 
@@ -111,10 +118,16 @@ module.exports = class CheckpointTrie extends BaseTrie {
   createScratchReadStream (scratch) {
     const trie = this.copy()
     scratch = scratch || this._scratch
+    scratch = new DB(scratch._db)
     // Only read from the scratch
-    trie._getDBs = [scratch]
+    trie.db = scratch
     trie._scratch = scratch
     return new ScratchReadStream(trie)
+  }
+
+  putRaw (key, val, cb) {
+    if (this.isCheckpoint) return this._overridePutRaw(key, val, cb)
+    this.db.put(key, val, cb)
   }
 
   /**
@@ -122,13 +135,7 @@ module.exports = class CheckpointTrie extends BaseTrie {
    * @private
    */
   _overridePutRaw (key, val, cb) {
-    const dbPut = (db, cb2) => {
-      db.put(key, val, {
-        keyEncoding: 'binary',
-        valueEncoding: 'binary'
-      }, cb2)
-    }
-    async.each(this.__putDBs, dbPut, cb)
+    this._mainDB.put(key, val, cb)
   }
 
   /**
@@ -136,12 +143,8 @@ module.exports = class CheckpointTrie extends BaseTrie {
    * @private
    */
   _enterCpMode () {
-    this._scratch = level()
-    this._getDBs = [this._scratch].concat(this._getDBs)
-    this.__putDBs = this._putDBs
-    this._putDBs = [this._scratch]
-    this._putRaw = this.putRaw
-    this.putRaw = this._overridePutRaw
+    this._scratch = new ScratchDB(this._mainDB)
+    this.db = this._scratch
   }
 
   /**
@@ -149,22 +152,16 @@ module.exports = class CheckpointTrie extends BaseTrie {
    * @private
    */
   _exitCpMode (commitState, cb) {
-    var scratch = this._scratch
+    const scratch = this._scratch
     this._scratch = null
-    this._getDBs = this._getDBs.slice(1)
-    this._putDBs = this.__putDBs
-    this.putRaw = this._putRaw
-
-    const flushScratch = (db, cb) => {
-      this.createScratchReadStream(scratch)
-        .pipe(WriteStream(db))
-        .on('close', cb)
-    }
+    this.db = this._mainDB
 
     if (commitState) {
-      async.map(this._putDBs, flushScratch, cb)
+      this.createScratchReadStream(scratch)
+        .pipe(WriteStream(this.db))
+        .on('close', cb)
     } else {
-      cb()
+      async.nextTick(cb)
     }
   }
 }

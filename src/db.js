@@ -3,11 +3,15 @@ const level = require('level-mem')
 const ethUtil = require('ethereumjs-util')
 const { asyncFirstSeries } = require('./util/async')
 
+const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
+
+/**
+ * DB is a thin wrapper around the underlying levelup db,
+ * which validates inputs and sets encoding type.
+ */
 module.exports = class DB {
   constructor (db) {
     this._db = db || level()
-    this._getDBs = [this._db]
-    this._putDBs = [this._db]
   }
 
   /**
@@ -19,21 +23,13 @@ module.exports = class DB {
    */
   get (key, cb) {
     key = ethUtil.toBuffer(key)
-
-    function dbGet (db, cb2) {
-      db.get(key, {
-        keyEncoding: 'binary',
-        valueEncoding: 'binary'
-      }, (err, foundNode) => {
-        if (err || !foundNode) {
-          cb2(null, null)
-        } else {
-          cb2(null, foundNode)
-        }
-      })
-    }
-
-    asyncFirstSeries(this._getDBs, dbGet, cb)
+    this._db.get(key, ENCODING_OPTS, (err, v) => {
+      if (err || !v) {
+        cb(null, null)
+      } else {
+        cb(null, v)
+      }
+    })
   }
 
   /**
@@ -44,14 +40,7 @@ module.exports = class DB {
    * `err` - for errors that may have occured
    */
   put (key, val, cb) {
-    function dbPut (db, cb2) {
-      db.put(key, val, {
-        keyEncoding: 'binary',
-        valueEncoding: 'binary'
-      }, cb2)
-    }
-
-    async.each(this._putDBs, dbPut, cb)
+    this._db.put(key, val, ENCODING_OPTS, cb)
   }
 
   /**
@@ -61,13 +50,7 @@ module.exports = class DB {
    * `err` - for errors that may have occured
    */
   del (key, cb) {
-    function del (db, cb2) {
-      db.del(key, {
-        keyEncoding: 'binary'
-      }, cb2)
-    }
-
-    async.each(this._putDBs, del, cb)
+    this._db.del(key, ENCODING_OPTS, cb)
   }
 
   /**
@@ -77,13 +60,13 @@ module.exports = class DB {
    * `err` - for errors that may have occured
    */
   batch (opStack, cb) {
-    function dbBatch (db, cb) {
-      db.batch(opStack, {
-        keyEncoding: 'binary',
-        valueEncoding: 'binary'
-      }, cb)
-    }
+    this._db.batch(opStack, ENCODING_OPTS, cb)
+  }
 
-    async.each(this._putDBs, dbBatch, cb)
+  /**
+   * Returns a copy of DB.
+   */
+  copy () {
+    return new DB(this._db)
   }
 }
