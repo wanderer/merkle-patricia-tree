@@ -1,5 +1,5 @@
 const ethUtil = require('ethereumjs-util')
-const CheckpointTrie = require('./checkpoint-trie')
+const CheckpointTrie = require('./checkpointTrie')
 
 /**
  * You can create a secure Trie where the keys are automatically hashed

@@ -77,7 +77,8 @@ module.exports = class CheckpointTrie extends BaseTrie {
 
   /**
    * Reverts the trie to the state it was at when `checkpoint` was first called.
-   * If during a nested checkpoint, only sets parent as current checkpoint.
+   * If during a nested checkpoint, sets root to most recent checkpoint, and sets
+   * parent checkpoint as current.
    * @method revert
    * @param {Function} cb the callback
    */
