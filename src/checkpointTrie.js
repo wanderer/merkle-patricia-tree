@@ -111,21 +111,6 @@ module.exports = class CheckpointTrie extends BaseTrie {
   }
 
   /**
-   * Returns a `ScratchReadStream` based on the state updates
-   * since checkpoint.
-   * @method createScratchReadStream
-   */
-  createScratchReadStream (scratch) {
-    const trie = this.copy()
-    scratch = scratch || this._scratch
-    scratch = new DB(scratch._leveldb)
-    // Only read from the scratch
-    trie.db = scratch
-    trie._scratch = scratch
-    return new ScratchReadStream(trie)
-  }
-
-  /**
    * Enter into checkpoint mode.
    * @private
    */
@@ -144,11 +129,23 @@ module.exports = class CheckpointTrie extends BaseTrie {
     this.db = this._mainDB
 
     if (commitState) {
-      this.createScratchReadStream(scratch)
+      this._createScratchReadStream(scratch)
         .pipe(WriteStream(this.db))
         .on('close', cb)
     } else {
       async.nextTick(cb)
     }
+  }
+
+  /**
+   * Returns a `ScratchReadStream` based on the state updates
+   * since checkpoint.
+   * @method createScratchReadStream
+   * @private
+   */
+  _createScratchReadStream (scratch) {
+    scratch = scratch || this._scratch
+    const trie = new BaseTrie(scratch, this.root)
+    return new ScratchReadStream(trie)
   }
 }
