@@ -125,19 +125,6 @@ module.exports = class CheckpointTrie extends BaseTrie {
     return new ScratchReadStream(trie)
   }
 
-  putRaw (key, val, cb) {
-    if (this.isCheckpoint) return this._overridePutRaw(key, val, cb)
-    this.db.put(key, val, cb)
-  }
-
-  /**
-   * Puts kv-pair directly to db, ignoring checkpoints.
-   * @private
-   */
-  _overridePutRaw (key, val, cb) {
-    this._mainDB.put(key, val, cb)
-  }
-
   /**
    * Enter into checkpoint mode.
    * @private

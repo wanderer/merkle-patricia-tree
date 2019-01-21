@@ -29,11 +29,7 @@ module.exports = class Trie {
     this.EMPTY_TRIE_ROOT = ethUtil.SHA3_RLP
     this.sem = semaphore(1)
 
-    if (db instanceof DB) {
-      this.db = db
-    } else {
-      this.db = new DB(db)
-    }
+    this.db = db || new DB()
 
     Object.defineProperty(this, 'root', {
       set(value) {
@@ -52,9 +48,6 @@ module.exports = class Trie {
     })
 
     this.root = root
-
-    this.getRaw = this.db.get.bind(this.db)
-    this.delRaw = this.db.del.bind(this.db)
   }
 
   /**
