@@ -8,12 +8,12 @@ const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
  * which validates inputs and sets encoding type.
  */
 module.exports = class DB {
-  constructor (db) {
-    this._db = db || level()
+  constructor (leveldb) {
+    this._leveldb = leveldb || level()
   }
 
   /**
-   * Retrieves a raw value from db.
+   * Retrieves a raw value from leveldb.
    * @param {Buffer|String} key
    * @param {Function} cb A callback `Function`, which is given the arguments
    * `err` - for errors that may have occured
@@ -21,7 +21,7 @@ module.exports = class DB {
    */
   get (key, cb) {
     key = ethUtil.toBuffer(key)
-    this._db.get(key, ENCODING_OPTS, (err, v) => {
+    this._leveldb.get(key, ENCODING_OPTS, (err, v) => {
       if (err || !v) {
         cb(null, null)
       } else {
@@ -31,24 +31,24 @@ module.exports = class DB {
   }
 
   /**
-   * Writes a value directly to db.
+   * Writes a value directly to leveldb.
    * @param {Buffer|String} key The key as a `Buffer` or `String`
    * @param {Buffer} value The value to be stored
    * @param {Function} cb A callback `Function`, which is given the argument
    * `err` - for errors that may have occured
    */
   put (key, val, cb) {
-    this._db.put(key, val, ENCODING_OPTS, cb)
+    this._leveldb.put(key, val, ENCODING_OPTS, cb)
   }
 
   /**
-   * Removes a raw value in the underlying db.
+   * Removes a raw value in the underlying leveldb.
    * @param {Buffer|String} key
    * @param {Function} cb A callback `Function`, which is given the argument
    * `err` - for errors that may have occured
    */
   del (key, cb) {
-    this._db.del(key, ENCODING_OPTS, cb)
+    this._leveldb.del(key, ENCODING_OPTS, cb)
   }
 
   /**
@@ -58,13 +58,13 @@ module.exports = class DB {
    * `err` - for errors that may have occured
    */
   batch (opStack, cb) {
-    this._db.batch(opStack, ENCODING_OPTS, cb)
+    this._leveldb.batch(opStack, ENCODING_OPTS, cb)
   }
 
   /**
    * Returns a copy of DB.
    */
   copy () {
-    return new DB(this._db)
+    return new DB(this._leveldb)
   }
 }

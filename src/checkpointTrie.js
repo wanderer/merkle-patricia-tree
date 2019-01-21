@@ -118,7 +118,7 @@ module.exports = class CheckpointTrie extends BaseTrie {
   createScratchReadStream (scratch) {
     const trie = this.copy()
     scratch = scratch || this._scratch
-    scratch = new DB(scratch._db)
+    scratch = new DB(scratch._leveldb)
     // Only read from the scratch
     trie.db = scratch
     trie._scratch = scratch
