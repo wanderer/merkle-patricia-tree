@@ -12,7 +12,7 @@ const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
 module.exports = class ScratchDB extends DB {
   constructor (upstreamDB) {
     super()
-    this._upstream = upstreamDB._leveldb
+    this._upstream = upstreamDB
   }
 
   /**
@@ -20,7 +20,7 @@ module.exports = class ScratchDB extends DB {
    * scratch DB, if key not found, searches upstream DB.
    */
   get (key, cb) {
-    const getDBs = this._upstream ? [this._leveldb, this._upstream] : [this._leveldb]
+    const getDBs = this._upstream._leveldb ? [this._leveldb, this._upstream._leveldb] : [this._leveldb]
     const dbGet = (db, cb2) => {
       db.get(key, ENCODING_OPTS, (err, v) => {
         if (err || !v) {
@@ -32,5 +32,11 @@ module.exports = class ScratchDB extends DB {
     }
 
     asyncFirstSeries(getDBs, dbGet, cb)
+  }
+
+  copy () {
+    const scratch = new ScratchDB(this._upstream)
+    scratch._leveldb = this._leveldb
+    return scratch
   }
 }

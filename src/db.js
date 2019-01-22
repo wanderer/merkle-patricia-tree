@@ -74,7 +74,8 @@ module.exports = class DB {
   }
 
   /**
-   * Returns a copy of DB.
+   * Returns a copy of the DB instance, with a reference
+   * to the **same** underlying leveldb instance.
    */
   copy () {
     return new DB(this._leveldb)

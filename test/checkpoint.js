@@ -1,8 +1,8 @@
 const tape = require('tape')
-const Trie = require('../src/index')
+const Trie = require('../src/checkpointTrie')
 
 tape('testing checkpoints', function (tester) {
-  let trie, preRoot, postRoot
+  let trie, preRoot, postRoot, trieCopy
   const it = tester.test
 
   it('setup', function (t) {
@@ -12,6 +12,16 @@ tape('testing checkpoints', function (tester) {
         preRoot = trie.root.toString('hex')
         t.end()
       })
+    })
+  })
+
+  it('should copy trie and get value before checkpoint', function (t) {
+    trieCopy = trie.copy()
+    t.equal(trieCopy.root.toString('hex'), preRoot)
+    trieCopy.get('do', function (err, res) {
+      t.error(err)
+      t.ok(Buffer.from('verb').equals(res))
+      t.end()
     })
   })
 
@@ -42,6 +52,22 @@ tape('testing checkpoints', function (tester) {
       t.error(err)
       t.ok(Buffer.from('emotion').equals(res))
       t.end()
+    })
+  })
+
+  it('should copy trie and get upstream and cache values after checkpoint', function (t) {
+    trieCopy = trie.copy()
+    t.equal(trieCopy.root.toString('hex'), postRoot)
+    t.equal(trieCopy._checkpoints.length, 1)
+    t.ok(trieCopy.isCheckpoint)
+    trieCopy.get('do', function (err, res) {
+      t.error(err)
+      t.ok(Buffer.from('verb').equals(res))
+      trieCopy.get('love', function (err, res) {
+        t.error(err)
+        t.ok(Buffer.from('emotion').equals(res))
+        t.end()
+      })
     })
   })
 

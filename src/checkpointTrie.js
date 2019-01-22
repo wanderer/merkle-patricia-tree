@@ -98,14 +98,18 @@ module.exports = class CheckpointTrie extends BaseTrie {
 
   /**
    * Returns a copy of the underlying trie with the interface
-   * of CheckpointTrie.
+   * of CheckpointTrie. If during a checkpoint, the copy will
+   * contain the checkpointing metadata (incl. reference to the same scratch).
    * @method copy
    */
   copy () {
     const db = this._mainDB.copy()
     const trie = new CheckpointTrie(db, this.root)
-    trie._scratch = this._scratch
-    trie._checkpoints = this._checkpoints.slice()
+    if (this.isCheckpoint) {
+      trie._checkpoints = this._checkpoints.slice()
+      trie._scratch = this._scratch.copy()
+      trie.db = trie._scratch
+    }
     return trie
   }
 
