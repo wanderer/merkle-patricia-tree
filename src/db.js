@@ -1,5 +1,4 @@
 const level = require('level-mem')
-const ethUtil = require('ethereumjs-util')
 
 const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
 
@@ -19,13 +18,14 @@ module.exports = class DB {
 
   /**
    * Retrieves a raw value from leveldb.
-   * @param {Buffer|String} key
+   * @param {Buffer} key
    * @param {Function} cb A callback `Function`, which is given the arguments
    * `err` - for errors that may have occured
    * and `value` - the found value in a `Buffer` or if no value was found `null`.
    */
   get (key, cb) {
-    key = ethUtil.toBuffer(key)
+    if (!Buffer.isBuffer(key)) throw new Error('Invalid input: expected buffer')
+
     this._leveldb.get(key, ENCODING_OPTS, (err, v) => {
       if (err || !v) {
         cb(null, null)
@@ -37,22 +37,27 @@ module.exports = class DB {
 
   /**
    * Writes a value directly to leveldb.
-   * @param {Buffer|String} key The key as a `Buffer` or `String`
+   * @param {Buffer} key The key as a `Buffer` or `String`
    * @param {Buffer} value The value to be stored
    * @param {Function} cb A callback `Function`, which is given the argument
    * `err` - for errors that may have occured
    */
   put (key, val, cb) {
+    if (!Buffer.isBuffer(key)) throw new Error('Invalid input: expected buffer')
+    if (!Buffer.isBuffer(val)) throw new Error('Invalid input: expected buffer')
+
     this._leveldb.put(key, val, ENCODING_OPTS, cb)
   }
 
   /**
    * Removes a raw value in the underlying leveldb.
-   * @param {Buffer|String} key
+   * @param {Buffer} key
    * @param {Function} cb A callback `Function`, which is given the argument
    * `err` - for errors that may have occured
    */
   del (key, cb) {
+    if (!Buffer.isBuffer(key)) throw new Error('Invalid input: expected buffer')
+
     this._leveldb.del(key, ENCODING_OPTS, cb)
   }
 
@@ -63,6 +68,8 @@ module.exports = class DB {
    * `err` - for errors that may have occured
    */
   batch (opStack, cb) {
+    if (!Array.isArray(opStack)) throw new Error('Invalid input: expected buffer')
+
     this._leveldb.batch(opStack, ENCODING_OPTS, cb)
   }
 
