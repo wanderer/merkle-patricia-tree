@@ -8,6 +8,11 @@ const ENCODING_OPTS = { keyEncoding: 'binary', valueEncoding: 'binary' }
  * which validates inputs and sets encoding type.
  */
 module.exports = class DB {
+  /**
+   * Initialize a DB instance. If `leveldb` is not provided, DB
+   * defaults to an [in-memory store](https://github.com/Level/memdown).
+   * @param {Object} [leveldb] - An abstract-leveldown compliant store
+   */
   constructor (leveldb) {
     this._leveldb = leveldb || level()
   }

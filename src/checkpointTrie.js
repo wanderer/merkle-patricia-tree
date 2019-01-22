@@ -3,7 +3,6 @@ const WriteStream = require('level-ws')
 const BaseTrie = require('./baseTrie')
 const proof = require('./proof.js')
 const ScratchReadStream = require('./scratchReadStream')
-const DB = require('./db')
 const ScratchDB = require('./scratch')
 const { callTogether } = require('./util/async')
 

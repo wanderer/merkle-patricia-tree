@@ -16,11 +16,10 @@ const { stringToNibbles, matchingNibbleLength, doKeysMatch } = require('./util/n
  * The API for the raw and the secure interface are about the same
  * @class Trie
  * @public
- * @param {Object} [db] An instance of [levelup](https://github.com/rvagg/node-levelup/), a compatible API or an instance of `DB`.
- * If the db is `null` or left undefined, then the trie will be stored in memory via [memdown](https://github.com/rvagg/memdown)
+ * @param {Object} [db] An instance of `DB`.
+ * If the db is `null` or left undefined, then the trie will be stored in memory via [memdown](https://github.com/Level/memdown)
  * @param {Buffer|String} [root] A hex `String` or `Buffer` for the root of a previously stored trie
  * @prop {Buffer} root The current root of the `trie`
- * @prop {Boolean} isCheckpoint  determines if you are saving to a checkpoint or directly to the db
  * @prop {Buffer} EMPTY_TRIE_ROOT the Root for an empty trie
  */
 module.exports = class Trie {
