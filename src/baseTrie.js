@@ -72,6 +72,24 @@ module.exports = class Trie {
     })
   }
 
+  /**
+   * Generate a proof for multiple keys. Result is a de-duplicated set of
+   * trie nodes (in no particular order) which can be used to construct
+   * a partial trie.
+   */
+  static proveMultiple (trie, keys, cb) {
+    const proofNodes = {}
+    async.map(keys, (key, cb) => Trie.prove(trie, key, cb), (err, results) => {
+      if (err) return cb(err)
+      for (let proof of results) {
+        for (let node of proof) {
+          proofNodes[ethUtil.keccak256(node)] = node
+        }
+      }
+      return cb(null, Object.values(proofNodes))
+    })
+  }
+
   static verifyProof (rootHash, key, proofNodes, cb) {
     let proofTrie = new Trie(null, rootHash)
     Trie.fromProof(proofNodes, (error, proofTrie) => {
@@ -79,6 +97,14 @@ module.exports = class Trie {
       proofTrie.get(key, (e, r) => {
         return cb(e, r)
       })
+    }, proofTrie)
+  }
+
+  static verifyMultiproof (rootHash, keys, proofNodes, cb) {
+    let proofTrie = new Trie(null, rootHash)
+    Trie.fromProof(proofNodes, (err, proofTrie) => {
+      if (err) return cb(new Error('Invalid proof nodes given'), null)
+      async.map(keys, (k, cb) => proofTrie.get(k, cb), cb)
     }, proofTrie)
   }
 

@@ -238,3 +238,58 @@ tape('simple merkle proofs generation and verification', function (tester) {
     })
   })
 })
+
+tape('multiproof generation and verification', function (tester) {
+  var it = tester.test
+  it('create a multiproof and verify it', function (t) {
+    var trie = new Trie()
+
+    async.series([
+      function (cb) {
+        trie.put('key1aa', '0123456789012345678901234567890123456789xx', cb)
+      },
+      function (cb) {
+        trie.put('key2bb', 'aval2', cb)
+      },
+      function (cb) {
+        trie.put('key3cc', 'aval3', cb)
+      },
+      function (cb) {
+        Trie.proveMultiple(trie, ['key2bb', 'key3cc'], function (err, proofNodes) {
+          if (err) return cb(err)
+          Trie.verifyMultiproof(trie.root, ['key2bb', 'key3cc'], proofNodes, function (err, values) {
+            if (err) return cb(err)
+            t.equal(values.length, 2)
+            t.equal(values[0].toString('utf8'), 'aval2')
+            t.equal(values[1].toString('utf8'), 'aval3')
+            cb()
+          })
+        })
+      },
+      function (cb) {
+        Trie.proveMultiple(trie, ['nono', 'key3cc'], function (err, proofNodes) {
+          if (err) return cb(err)
+          Trie.verifyMultiproof(trie.root, ['nono', 'key3cc'], proofNodes, function (err, values) {
+            if (err) return cb(err)
+            t.equal(values.length, 2)
+            t.equal(values[0], null)
+            t.equal(values[1].toString('utf8'), 'aval3')
+            cb()
+          })
+        })
+      },
+      function (cb) {
+        // proof shouldn't work for different keys
+        Trie.proveMultiple(trie, ['key2bb', 'key3cc'], function (err, proofNodes) {
+          if (err) return cb(err)
+          Trie.verifyMultiproof(trie.root, ['key3cc', 'key1aa'], proofNodes, function (err, values) {
+            t.ok(err)
+            cb()
+          })
+        })
+      }
+    ], function (err) {
+      t.end(err)
+    })
+  })
+})
