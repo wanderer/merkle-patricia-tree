@@ -1,11 +1,13 @@
 import * as rlp from 'rlp'
 import * as ethUtil from 'ethereumjs-util'
-import { DB, BatchDBOp } from './db'
+import { DB, BatchDBOp, PutBatch } from './db'
 import { TrieNode } from './trieNode'
 import { TrieReadStream as ReadStream } from './readStream'
 import { PrioritizedTaskExecutor } from './prioritizedTaskExecutor'
 import { callTogether } from './util/async'
 import { stringToNibbles, matchingNibbleLength, doKeysMatch } from './util/nibbles'
+import { ErrorCallback } from './types'
+import { LevelUp } from 'levelup'
 const assert = require('assert')
 const async = require('async')
 const semaphore = require('semaphore')
@@ -26,7 +28,7 @@ export class Trie {
   protected sem: any
   private _root: Buffer
 
-  constructor(db?: any, root?: Buffer) {
+  constructor(db?: LevelUp | null, root?: Buffer) {
     this.EMPTY_TRIE_ROOT = ethUtil.KECCAK256_RLP
     this.sem = semaphore(1)
     this.db = db ? new DB(db) : new DB()
@@ -42,7 +44,7 @@ export class Trie {
         type: 'put',
         key: ethUtil.keccak(nodeValue),
         value: ethUtil.toBuffer(nodeValue),
-      }
+      } as PutBatch
     })
 
     if (!proofTrie) {
@@ -52,7 +54,7 @@ export class Trie {
       }
     }
 
-    proofTrie.db.batch(opStack, (e: Error) => {
+    proofTrie.db.batch(opStack, (e?: Error) => {
       cb(e, proofTrie)
     })
   }
@@ -134,7 +136,7 @@ export class Trie {
    * @param {Buffer|String} Value
    * @param {Function} cb A callback `Function` which is given the argument `err` - for errors that may have occured
    */
-  put(key: Buffer, value: Buffer, cb: Function) {
+  put(key: Buffer, value: Buffer, cb: ErrorCallback) {
     key = ethUtil.toBuffer(key)
     value = ethUtil.toBuffer(value)
 
@@ -204,7 +206,7 @@ export class Trie {
    * key/value db.
    * @deprecated
    */
-  putRaw(key: Buffer, value: Buffer, cb: Function) {
+  putRaw(key: Buffer, value: Buffer, cb: ErrorCallback) {
     this.db.put(key, value, cb)
   }
 
@@ -212,7 +214,7 @@ export class Trie {
    * Deletes key directly from underlying key/value db.
    * @deprecated
    */
-  delRaw(key: Buffer, cb: Function) {
+  delRaw(key: Buffer, cb: ErrorCallback) {
     this.db.del(key, cb)
   }
 
@@ -234,7 +236,7 @@ export class Trie {
   }
 
   // writes a single node to dbs
-  _putNode(node: TrieNode, cb: Function) {
+  _putNode(node: TrieNode, cb: ErrorCallback) {
     const hash = node.hash()
     const serialized = node.serialize()
     this.db.put(hash, serialized, cb)
@@ -362,7 +364,7 @@ export class Trie {
    * @param {Array} stack -
    * @param {Function} cb - the callback
    */
-  _updateNode(k: Buffer, value: Buffer, keyRemainder: number[], stack: TrieNode[], cb: Function) {
+  _updateNode(k: Buffer, value: Buffer, keyRemainder: number[], stack: TrieNode[], cb: ErrorCallback) {
     const toSave: BatchDBOp[] = []
     const lastNode = stack.pop()
     if (!lastNode) {
@@ -562,7 +564,7 @@ export class Trie {
    * @param {Array} opStack - a stack of levelup operations to commit at the end of this funciton
    * @param {Function} cb
    */
-  _saveStack(key: number[], stack: TrieNode[], opStack: BatchDBOp[], cb: Function) {
+  _saveStack(key: number[], stack: TrieNode[], opStack: BatchDBOp[], cb: ErrorCallback) {
     let lastRoot
 
     // update nodes
@@ -706,7 +708,7 @@ export class Trie {
             return cb(e, foundNode)
           }
           key = processBranchNode(key, branchNodeKey, foundNode, parentNode as TrieNode, stack)
-          this._saveStack(key, stack, opStack, cb)
+          this._saveStack(key, stack, opStack, cb as ErrorCallback)
         })
       } else {
         // simple removing a leaf and recaluclation the stack
@@ -715,13 +717,13 @@ export class Trie {
         }
 
         stack.push(lastNode)
-        this._saveStack(key, stack, opStack, cb)
+        this._saveStack(key, stack, opStack, cb as ErrorCallback)
       }
     }
   }
 
   // Creates the initial node from an empty tree
-  _createInitialNode(key: Buffer, value: Buffer, cb: Function) {
+  _createInitialNode(key: Buffer, value: Buffer, cb: ErrorCallback) {
     const newNode = new TrieNode('leaf', key, value)
     this.root = newNode.hash()
     this._putNode(newNode, cb)
@@ -785,10 +787,10 @@ export class Trie {
    * @param {Array} ops
    * @param {Function} cb
    */
-  batch(ops: BatchDBOp[], cb: Function) {
+  batch(ops: BatchDBOp[], cb: ErrorCallback) {
     async.eachSeries(
       ops,
-      (op: BatchDBOp, cb2: Function) => {
+      (op: BatchDBOp, cb2: ErrorCallback) => {
         if (op.type === 'put') {
           if (!op.value) throw new Error('Invalid batch db operation')
           this.put(op.key, op.value, cb2)
