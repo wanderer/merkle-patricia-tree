@@ -1,4 +1,3 @@
-import * as rlp from 'rlp'
 import { LevelUp } from 'levelup'
 import * as ethUtil from 'ethereumjs-util'
 import { DB, BatchDBOp, PutBatch } from './db'
@@ -690,7 +689,7 @@ export class Trie {
       } else {
         // the lastNode has to be a leaf if its not a branch. And a leaf's parent
         // if it has one must be a branch.
-        if (!parentNode || !(parentNode instanceof BranchNode)) {
+        if (!(parentNode instanceof BranchNode)) {
           return cb(new Error('Expected branch node'))
         }
         const lastNodeKey = lastNode.key
