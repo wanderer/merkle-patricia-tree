@@ -182,6 +182,6 @@ export class CheckpointTrie extends BaseTrie {
       return hashRoot
     }
 
-    return node.raw
+    return node.raw()
   }
 }
