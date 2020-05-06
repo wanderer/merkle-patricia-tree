@@ -47,7 +47,7 @@
   ],
   "license": "MPL-2.0",
   "dependencies": {
-    "ethereumjs-util": "^6.1.0",
+    "ethereumjs-util": "6.1.0",
     "level-mem": "^3.0.1",
     "level-ws": "^2.0.0",
     "readable-stream": "^3.6.0",
