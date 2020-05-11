@@ -1,6 +1,9 @@
 import { CheckpointTrie } from './checkpointTrie'
 import { SecureTrie } from './secure'
 import { toBuffer } from 'ethereumjs-util'
+import { BaseTrie } from './index'
+import { BatchDBOp } from './db'
+import { ScratchDB } from './scratch'
 
 type Callback<T> = (err: any, value: T) => void
 
@@ -37,6 +40,40 @@ function wrapPromise<T>(promise: Promise<T | null>, cb?: Callback<T | null>): Pr
 }
 
 class WrappedCheckpointTrie extends CheckpointTrie {
+  static async prove(
+    trie: BaseTrie,
+    key: Buffer | string,
+    cb?: Callback<Buffer[] | null>,
+  ): Promise<Buffer[]> {
+    return wrapPromise(CheckpointTrie.prove(trie, toBuffer(key)), cb) as Promise<Buffer[]>
+  }
+
+  static async verifyProof(
+    rootHash: Buffer | string,
+    key: Buffer | string,
+    proofNodes: Buffer[],
+    cb?: Callback<Buffer | null>,
+  ): Promise<Buffer | null> {
+    return CheckpointTrie.verifyProof(toBuffer(rootHash), toBuffer(key), proofNodes).then(
+      (value) => {
+        if (value === null) {
+          cb?.(new Error('verifyProof failed'), null)
+        } else {
+          cb?.(null, value)
+        }
+        return value
+      },
+      (err) => {
+        if (cb) {
+          cb(err, null)
+          return undefined as any
+        } else {
+          throw err
+        }
+      },
+    )
+  }
+
   async get(key: Buffer | string, cb?: Callback<Buffer | null>): Promise<Buffer | null> {
     return wrapPromise(super.get(toBuffer(key)), cb)
   }
@@ -50,11 +87,15 @@ class WrappedCheckpointTrie extends CheckpointTrie {
   }
 
   async getRaw(key: Buffer, cb?: Callback<Buffer | null>): Promise<Buffer | null> {
-    return wrapPromise(this.db.get(toBuffer(key)), cb)
+    return wrapPromise(this._mainDB.get(toBuffer(key)), cb)
   }
 
   async putRaw(key: Buffer | string, value: Buffer, cb?: Callback<void>): Promise<void> {
-    return wrapEmptyPromise(this.db.put(toBuffer(key), toBuffer(value)), cb)
+    return wrapEmptyPromise(this._mainDB.put(toBuffer(key), toBuffer(value)), cb)
+  }
+
+  async delRaw(key: Buffer, cb?: Callback<void>): Promise<void> {
+    return wrapEmptyPromise(this._mainDB.del(toBuffer(key)), cb)
   }
 
   copy(includeCheckpoints: boolean = true): WrappedCheckpointTrie {
@@ -79,9 +120,51 @@ class WrappedCheckpointTrie extends CheckpointTrie {
   async revert(cb?: Callback<void>): Promise<void> {
     return wrapEmptyPromise(super.revert(), cb)
   }
+
+  async batch(ops: BatchDBOp[], cb?: Callback<void>): Promise<void> {
+    return wrapEmptyPromise(super.batch(ops), cb)
+  }
+
+  createScratchReadStream(scratchDb?: ScratchDB) {
+    return super._createScratchReadStream(scratchDb)
+  }
 }
 
 class WrappedSecureTrie extends SecureTrie {
+  static async prove(
+    trie: SecureTrie,
+    key: Buffer | string,
+    cb?: Callback<Buffer[] | null>,
+  ): Promise<Buffer[]> {
+    return wrapPromise(SecureTrie.prove(trie, toBuffer(key)), cb) as Promise<Buffer[]>
+  }
+
+  static async verifyProof(
+    rootHash: Buffer | string,
+    key: Buffer | string,
+    proofNodes: Buffer[],
+    cb?: Callback<Buffer | null>,
+  ): Promise<Buffer | null> {
+    return SecureTrie.verifyProof(toBuffer(rootHash), toBuffer(key), proofNodes).then(
+      (value) => {
+        if (value === null) {
+          cb?.(new Error('verifyProof failed'), null)
+        } else {
+          cb?.(null, value)
+        }
+        return value
+      },
+      (err) => {
+        if (cb) {
+          cb(err, null)
+          return undefined as any
+        } else {
+          throw err
+        }
+      },
+    )
+  }
+
   async get(key: Buffer | string, cb?: Callback<Buffer | null>): Promise<Buffer | null> {
     return wrapPromise(super.get(toBuffer(key)), cb)
   }
@@ -95,11 +178,15 @@ class WrappedSecureTrie extends SecureTrie {
   }
 
   async getRaw(key: Buffer, cb?: Callback<Buffer | null>): Promise<Buffer | null> {
-    return wrapPromise(this.db.get(toBuffer(key)), cb)
+    return wrapPromise(this._mainDB.get(toBuffer(key)), cb)
   }
 
   async putRaw(key: Buffer | string, value: Buffer, cb?: Callback<void>): Promise<void> {
-    return wrapEmptyPromise(this.db.put(toBuffer(key), toBuffer(value)), cb)
+    return wrapEmptyPromise(this._mainDB.put(toBuffer(key), toBuffer(value)), cb)
+  }
+
+  async delRaw(key: Buffer, cb?: Callback<void>): Promise<void> {
+    return wrapEmptyPromise(this._mainDB.del(toBuffer(key)), cb)
   }
 
   copy(includeCheckpoints: boolean = true): WrappedSecureTrie {
@@ -123,6 +210,14 @@ class WrappedSecureTrie extends SecureTrie {
 
   async revert(cb?: Callback<void>): Promise<void> {
     return wrapEmptyPromise(super.revert(), cb)
+  }
+
+  async batch(ops: BatchDBOp[], cb?: Callback<void>): Promise<void> {
+    return wrapEmptyPromise(super.batch(ops), cb)
+  }
+
+  createScratchReadStream(scratchDb?: ScratchDB) {
+    return super._createScratchReadStream(scratchDb)
   }
 }
 
