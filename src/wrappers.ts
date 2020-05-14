@@ -189,15 +189,9 @@ class WrappedSecureTrie extends SecureTrie {
     return wrapEmptyPromise(this._mainDB.del(toBuffer(key)), cb)
   }
 
-  copy(includeCheckpoints: boolean = true): WrappedSecureTrie {
+  copy(): WrappedSecureTrie {
     const db = this._mainDB.copy()
-    const trie = new WrappedSecureTrie(db._leveldb, this.root)
-    if (includeCheckpoints && this.isCheckpoint) {
-      trie._checkpoints = this._checkpoints.slice()
-      trie._scratch = this._scratch!.copy()
-      trie.db = trie._scratch
-    }
-    return trie
+    return new WrappedSecureTrie(db._leveldb, this.root)
   }
 
   async checkRoot(root: Buffer, cb?: Callback<boolean | null>): Promise<boolean> {
