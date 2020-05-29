@@ -134,7 +134,7 @@ tape('SecureTrie.copy', function (it) {
     await trie.put(Buffer.from('key2'), Buffer.from('value2'))
     const trieCopy = trie.copy()
     const value = await trieCopy.get(Buffer.from('key2'))
-    t.equal(value.toString(), 'value2')
+    t.equal(value!.toString(), 'value2')
     t.end()
   })
 
@@ -146,7 +146,7 @@ tape('SecureTrie.copy', function (it) {
     await trie.put(Buffer.from('key2'), Buffer.from('value2'))
     const trieCopy = trie.copy()
     const value = await trieCopy.get(Buffer.from('key1'))
-    t.equal(value.toString(), 'value1')
+    t.equal(value!.toString(), 'value1')
     t.end()
   })
 })
