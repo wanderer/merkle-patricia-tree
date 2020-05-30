@@ -18,6 +18,8 @@ import {
 } from './trieNode'
 const assert = require('assert')
 
+export type Proof = Buffer[]
+
 interface Path {
   node: TrieNode | null
   remaining: Nibbles
@@ -25,8 +27,6 @@ interface Path {
 }
 
 type FoundNode = (nodeRef: Buffer, node: TrieNode, key: Nibbles, walkController: any) => void
-
-export type Proof = Buffer[]
 
 /**
  * Use `import { BaseTrie as Trie } from 'merkle-patricia-tree'` for the base interface.
