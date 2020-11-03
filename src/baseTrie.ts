@@ -257,7 +257,7 @@ export class Trie {
               const childRef = child[1] as Buffer
               const childKey = key.concat(keyExtension)
               const priority = childKey.length
-              taskExecutor.execute(priority, async (taskCallback: Function) => {
+              await taskExecutor.execute(priority, async (taskCallback: Function) => {
                 const childNode = await self._lookupNode(childRef)
                 taskCallback()
                 if (childNode) {
@@ -277,7 +277,7 @@ export class Trie {
             const childKey = key.slice()
             childKey.push(childIndex)
             const priority = childKey.length
-            taskExecutor.execute(priority, async (taskCallback: Function) => {
+            await taskExecutor.execute(priority, async (taskCallback: Function) => {
               const childNode = await self._lookupNode(childRef)
               taskCallback()
               if (childNode) {
